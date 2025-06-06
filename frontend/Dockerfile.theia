@@ -1,0 +1,133 @@
+# Use elswork/theia as the base image
+FROM elswork/theia:latest
+
+# Stay as root for all operations
+USER root
+
+# Install Python, Java, and C++ runtimes using Alpine package manager
+RUN apk update && apk add --no-cache \
+    python3 \
+    py3-pip \
+    openjdk11 \
+    gcc \
+    g++ \
+    make \
+    musl-dev \
+    nodejs \
+    npm
+
+# Create symbolic link for python command
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+# Copy your custom extension
+COPY theia-extensions/code-runner /home/code-runner
+
+# Build the extension
+WORKDIR /home/code-runner
+RUN npm install && npm run build
+
+# Expose port
+EXPOSE 3000
+
+# Start Theia (adjust the path based on the actual elswork/theia structure)
+CMD ["node", "/home/src-gen/backend/main.js", "--hostname=0.0.0.0", "--plugins=local-dir:/home/code-runner"]
+
+
+# Use a newer Node.js base and install Theia ourselves
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk update && apk add --no-cache \
+    python3 \
+    py3-pip \
+    openjdk11 \
+    gcc \
+    g++ \
+    make \
+    musl-dev \
+    git
+
+# Create symbolic link for python command
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+# Create theia user
+RUN addgroup -g 1001 theia && \
+    adduser -D -s /bin/sh -u 1001 -G theia theia
+
+# Install Theia globally
+RUN npm install -g @theia/cli
+
+# Create workspace directory
+RUN mkdir -p /home/theia && chown -R theia:theia /home/theia
+
+# Copy your custom extension
+COPY theia-extensions/code-runner /home/theia/code-runner
+RUN chown -R theia:theia /home/theia/code-runner
+
+# Switch to theia user
+USER theia
+WORKDIR /home/theia
+
+# Create a minimal Theia application
+RUN mkdir -p theia-app && cd theia-app && \
+    echo '{ "private": true, "dependencies": { "@theia/cli": "latest", "@theia/core": "latest", "@theia/filesystem": "latest", "@theia/workspace": "latest", "@theia/preferences": "latest", "@theia/navigator": "latest", "@theia/terminal": "latest", "@theia/editor": "latest", "@theia/monaco": "latest" }, "devDependencies": { "@theia/cli": "latest" }, "scripts": { "prepare": "theia build", "start": "theia start", "watch": "theia build --watch" } }' > package.json && \
+    npm install && \
+    npm run prepare
+
+# Build the extension
+WORKDIR /home/theia/code-runner
+RUN npm install && npm run build
+
+# Go back to theia app directory
+WORKDIR /home/theia/theia-app
+
+# Expose port
+EXPOSE 3000
+
+# Start Theia
+CMD ["npm", "start", "--", "--hostname=0.0.0.0", "--port=3000"]
+
+
+# Use a pre-built Theia image that works
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk update && apk add --no-cache \
+    python3 \
+    py3-pip \
+    openjdk11 \
+    gcc \
+    g++ \
+    make \
+    musl-dev
+
+# Create symbolic link for python command
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+# Create theia user
+RUN addgroup -g 1001 theia && \
+    adduser -D -s /bin/sh -u 1001 -G theia theia
+
+# Create workspace directory
+RUN mkdir -p /home/theia/workspace && chown -R theia:theia /home/theia
+
+# Copy your custom extension and build it separately
+COPY theia-extensions/code-runner /home/theia/code-runner
+RUN chown -R theia:theia /home/theia/code-runner
+
+# Switch to theia user and build only the extension
+USER theia
+WORKDIR /home/theia/code-runner
+
+# Downgrade TypeScript to avoid compatibility issues
+RUN npm install typescript@4.9.5 --save-dev && npm install && npm run build
+
+# Install a lightweight code editor instead of full Theia
+WORKDIR /home/theia
+RUN npm install -g code-server
+
+# Expose port
+EXPOSE 3000
+
+# Start code-server with the workspace
+CMD ["code-server", "--bind-addr", "0.0.0.0:3000", "--auth", "none", "/home/theia/workspace"]

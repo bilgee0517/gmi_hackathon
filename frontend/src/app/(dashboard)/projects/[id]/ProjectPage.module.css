@@ -1,0 +1,234 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f9fafb;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.projectName {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.projectDescription {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.newFileButton {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.newFileButton:hover {
+  background-color: #1d4ed8;
+}
+
+.mainContent {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 16rem;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+.sidebarContent {
+  padding: 1rem;
+}
+
+.sidebarTitle {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.fileList :global(.selected) {
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+.newFileButton {
+  margin-top: auto;
+  padding: 0.5rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newFileButton:hover {
+  background-color: #1565c0;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileButton {
+  flex: 1;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.fileButton:hover {
+  background-color: #f3f4f6;
+}
+
+.selectedFile {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.deleteButton {
+  padding: 0.25rem;
+  color: #9ca3af;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.fileItem:hover .deleteButton {
+  opacity: 1;
+}
+
+.deleteButton:hover {
+  color: #ef4444;
+}
+
+.deleteIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.editorOutput {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.editorControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fileNameInput {
+  font-size: 1.125rem;
+  font-weight: 600;
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.fileNameInput:hover {
+  border-color: #d1d5db;
+}
+
+.fileNameInput:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.languageSelect {
+  font-size: 0.875rem;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.runButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s;
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.runButton:hover {
+  background-color: #1d4ed8;
+}
+
+.running {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.editorContainer {
+  flex: 1;
+  overflow: hidden;
+}
+
+.consoleOutput {
+  background-color: #111827;
+  padding: 1rem;
+  height: 12rem;
+  overflow-y: auto;
+}
+
+.consoleTitle {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.consoleContent {
+  background-color: #000000;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.consoleLine {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #4ade80;
+}
+
+.noFileSelected {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+}
