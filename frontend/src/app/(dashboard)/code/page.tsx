@@ -2,14 +2,21 @@
 
 import { useState } from 'react';
 import CodeEditor from '../../components/CodeEditor';
+import { 
+  PlayIcon, 
+  StopIcon, 
+  DocumentDuplicateIcon,
+  ShareIcon,
+  Cog6ToothIcon
+} from '@heroicons/react/24/outline';
 
 const languages = [
-  { id: 'javascript', name: 'JavaScript' },
-  { id: 'python', name: 'Python' },
-  { id: 'typescript', name: 'TypeScript' },
+  { id: 'javascript', name: 'JavaScript', color: 'bg-yellow-500' },
+  { id: 'python', name: 'Python', color: 'bg-blue-500' },
+  { id: 'typescript', name: 'TypeScript', color: 'bg-blue-600' },
 ];
 
-const BACKEND_URL = 'http://localhost:8000'; // FastAPI backend URL
+const BACKEND_URL = 'http://localhost:8000';
 
 export default function CodePage() {
   const [code, setCode] = useState('');
@@ -23,7 +30,6 @@ export default function CodePage() {
       setOutput([]);
 
       if (selectedLanguage === 'javascript' || selectedLanguage === 'typescript') {
-        // Run JavaScript/TypeScript in the browser
         const logs: string[] = [];
         const safeConsole = {
           log: (...args: any[]) => {
@@ -38,12 +44,6 @@ export default function CodePage() {
         const safeEval = new Function('console', code);
         safeEval(safeConsole);
       } else {
-        // Run other languages on the backend
-        console.log('Sending request to backend:', {
-          code,
-          language: selectedLanguage
-        });
-
         const response = await fetch(`${BACKEND_URL}/execute`, {
           method: 'POST',
           headers: {
@@ -55,9 +55,7 @@ export default function CodePage() {
           }),
         });
 
-        console.log('Response status:', response.status);
         const data = await response.json();
-        console.log('Response data:', data);
         
         if (!response.ok) {
           throw new Error(data.detail || 'Failed to execute code');
@@ -78,58 +76,117 @@ export default function CodePage() {
     }
   };
 
+  const selectedLang = languages.find(lang => lang.id === selectedLanguage);
+
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">Code Editor</h1>
-          <select
-            value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
-            className="px-3 py-1 border border-gray-300 rounded-lg bg-white dark:bg-gray-800"
-          >
-            {languages.map((lang) => (
-              <option key={lang.id} value={lang.id}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900">Code Playground</h1>
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${selectedLang?.color}`}></div>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="input text-sm py-2 px-3 min-w-[120px]"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.id} value={lang.id}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <button className="btn-secondary p-2">
+              <DocumentDuplicateIcon className="h-4 w-4" />
+            </button>
+            <button className="btn-secondary p-2">
+              <ShareIcon className="h-4 w-4" />
+            </button>
+            <button className="btn-secondary p-2">
+              <Cog6ToothIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={runCode}
+              disabled={isRunning}
+              className={`btn-primary flex items-center gap-2 ${
+                isRunning ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {isRunning ? (
+                <>
+                  <StopIcon className="h-4 w-4" />
+                  Running...
+                </>
+              ) : (
+                <>
+                  <PlayIcon className="h-4 w-4" />
+                  Run Code
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <button
-          onClick={runCode}
-          disabled={isRunning}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            isRunning
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
-        >
-          {isRunning ? 'Running...' : 'Run Code'}
-        </button>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-4">
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            language={selectedLanguage}
-            theme="vs-dark"
-            height="500px"
-          />
+
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Editor */}
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white border-b border-gray-200 px-4 py-2">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <span>main.{selectedLanguage === 'javascript' ? 'js' : selectedLanguage === 'typescript' ? 'ts' : 'py'}</span>
+              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+              <span>{code.split('\n').length} lines</span>
+            </div>
+          </div>
+          <div className="flex-1 p-4">
+            <CodeEditor
+              value={code}
+              onChange={setCode}
+              language={selectedLanguage}
+              theme="vs-dark"
+              height="100%"
+            />
+          </div>
         </div>
-        
-        <div className="bg-gray-900 rounded-lg p-4">
-          <h2 className="text-white font-semibold mb-2">Console Output</h2>
-          <div className="bg-black rounded-lg p-4 h-[500px] overflow-y-auto">
-            {output.map((line, index) => (
-              <div key={index} className="text-green-400 font-mono text-sm">
-                {line}
+
+        {/* Output Panel */}
+        <div className="w-96 bg-gray-900 flex flex-col">
+          <div className="bg-gray-800 px-4 py-3 border-b border-gray-700">
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-semibold text-sm">Console Output</h2>
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-yellow-400 animate-pulse' : output.length > 0 ? 'bg-green-400' : 'bg-gray-500'}`}></div>
+                <span className="text-xs text-gray-400">
+                  {isRunning ? 'Running' : output.length > 0 ? 'Ready' : 'Idle'}
+                </span>
               </div>
-            ))}
+            </div>
+          </div>
+          
+          <div className="flex-1 p-4 overflow-y-auto">
+            {output.length === 0 ? (
+              <div className="text-gray-500 text-sm italic">
+                Run your code to see output here...
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {output.map((line, index) => (
+                  <div key={index} className="text-green-400 font-mono text-sm whitespace-pre-wrap">
+                    {line}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}
